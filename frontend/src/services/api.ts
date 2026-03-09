@@ -113,6 +113,9 @@ export async function deleteExpense(id: number): Promise<void> {
 
 /**
  * Create a category
+ *
+ * @param (CategoryFormData) - data of a category instance
+ * @return (json) - succesfully created data
  */
 export async function createCategory(
   data: CategoryFormData,
@@ -133,5 +136,19 @@ export async function createCategory(
     throw new Error("Failed to create category");
   }
 
+  return response.json();
+}
+
+/**
+ * Get list of categories
+ *
+ * @param none
+ * @return (json) - list of categories
+ */
+export async function getCategories(): Promise<Category[]> {
+  const response = await fetch(`${API_BASE_URL}/categories`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch expenses");
+  }
   return response.json();
 }
