@@ -27,7 +27,7 @@ services:
           "root",
           "-prootpassword",
         ]
-      interval: 10s
+      interval: 2s
       timeout: 5s
       retries: 5
     networks:
@@ -55,9 +55,8 @@ services:
       - backend_gems:/usr/local/bundle
     command: >
       sh -c "
-        bundle install &&
+        bundle check || bundle install &&
         bundle exec rails db:migrate &&
-        bundle exec rails db:seed &&
         bundle exec rails server -b 0.0.0.0
       "
     networks:
