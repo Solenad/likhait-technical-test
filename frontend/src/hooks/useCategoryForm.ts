@@ -46,8 +46,8 @@ export function useCategoryForm({
 
     setIsSubmitting(true);
     try {
-      const sanitizedData = name: formData.name.trim();
-      await onSubmit({sanitizedData});
+      const sanitizedData = { name: formData.name.trim() };
+      await onSubmit(sanitizedData);
       setFormData({ name: "" });
       setErrors({});
     } catch (error) {

@@ -6,13 +6,14 @@ import { MonthNavigation } from "../components/MonthNavigation";
 import CategoryBreakdown from "../components/CategoryBreakdown";
 import { CalendarExpenseTable } from "../components/CalendarExpenseTable";
 import { ExpenseForm } from "../components/ExpenseForm";
-import { Modal, Button } from "../vibes";
+import { Modal, Button, Dropdown } from "../vibes";
 import { COLORS } from "../constants/colors";
 
 const HistoryPage: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Get year and month from URL params, default to current date if not provided
   const getInitialYearMonth = () => {
@@ -59,6 +60,14 @@ const HistoryPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle changes for insert button, open indicated modal
+  const handleInsertChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedAction = e.target.value;
+
+    if (selectedAction === "expense") setIsExpenseModalOpen(true);
+    else setIsCategoryModalOpen(true);
   };
 
   const handleYearChange = (year: number) => {
@@ -148,9 +157,19 @@ const HistoryPage: React.FC = () => {
             onYearChange={handleYearChange}
           />
         </div>
-        <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-          Add Expense
-        </Button>
+        <Dropdown
+          trigger={<Button variant="primary">+ Insert ▾</Button>}
+          items={[
+            {
+              label: "Add Expense",
+              onClick: () => setIsExpenseModalOpen(true),
+            },
+            {
+              label: "Add Category",
+              onClick: () => setIsCategoryModalOpen(true),
+            },
+          ]}
+        />
       </div>
 
       <MonthNavigation
@@ -180,8 +199,8 @@ const HistoryPage: React.FC = () => {
       </div>
 
       <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isExpenseModalOpen}
+        onClose={() => setIsExpenseModalOpen(false)}
         title="Add New Expense"
       >
         <ExpenseForm
