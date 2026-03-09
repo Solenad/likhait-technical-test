@@ -1,6 +1,7 @@
 import React from "react";
 import { CATEGORY_EMOJIS } from "../constants/categoryEmojis";
 import { COLORS } from "../constants/colors";
+import { Button } from "../vibes";
 
 interface CategoryData {
   category: string;
@@ -63,7 +64,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
   };
 
   const toggleButtonStyle: React.CSSProperties = {
-    width: "32px",
+    width: "102px",
     height: "32px",
     background: COLORS.secondary.s03,
     border: "none",
@@ -172,6 +173,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
             e.currentTarget.style.color = COLORS.secondary.s08;
           }}
         >
+          Categories
           <svg
             width="16"
             height="16"
@@ -185,6 +187,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
             <path d="M8 11l-5-5h10z" />
           </svg>
         </button>
+        <Button>wow</Button>
       </div>
 
       {!isCollapsed && (
