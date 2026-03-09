@@ -24,9 +24,6 @@ RUN bundle config set --local deployment 'false' && \
 # Copy application code
 COPY . .
 
-# Convert Windows line endings to Linux line endings
-RUN dos2unix bin/docker-entrypoint
-
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile --gemfile app/ lib/
 
