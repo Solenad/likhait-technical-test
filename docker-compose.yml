@@ -53,10 +53,11 @@ services:
     volumes:
       - ./backend:/rails
       - backend_gems:/usr/local/bundle
+      # isolating rails for faster compose
+      - backend_tmp:/rails/tmp
     command: >
       sh -c "
         bundle check || bundle install &&
-        bundle exec rails db:migrate &&
         bundle exec rails server -b 0.0.0.0
       "
     networks:
@@ -84,6 +85,7 @@ volumes:
   mysql_data:
   backend_gems:
   frontend_node_modules:
+  backend_tmp:
 
 networks:
   expense_network:
