@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { getExpenses, createExpense } from "../services/api";
-import { Expense, ExpenseFormData } from "../types";
+import {
+  getExpenses,
+  createExpense,
+  createCategory,
+  getCategories,
+} from "../services/api";
+import { Expense, ExpenseFormData, Category, CategoryFormData } from "../types";
 import YearNavigation from "../components/YearNavigation";
 import { MonthNavigation } from "../components/MonthNavigation";
 import CategoryBreakdown from "../components/CategoryBreakdown";
 import { CalendarExpenseTable } from "../components/CalendarExpenseTable";
 import { ExpenseForm } from "../components/ExpenseForm";
+import { CategoryForm } from "../components/CategoryForm";
 import { Modal, Button, Dropdown } from "../vibes";
 import { COLORS } from "../constants/colors";
 
 const HistoryPage: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [categoryList, setCategoryList] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // Get year and month from URL params, default to current date if not provided
@@ -44,6 +52,7 @@ const HistoryPage: React.FC = () => {
   // Initialize URL params if not present
   useEffect(() => {
     updateURL(selectedYear, selectedMonth);
+    fetchCategories();
   }, []);
 
   useEffect(() => {
@@ -62,12 +71,13 @@ const HistoryPage: React.FC = () => {
     }
   };
 
-  // Handle changes for insert button, open indicated modal
-  const handleInsertChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedAction = e.target.value;
-
-    if (selectedAction === "expense") setIsExpenseModalOpen(true);
-    else setIsCategoryModalOpen(true);
+  const fetchCategories = async () => {
+    try {
+      const data = await getCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
   };
 
   const handleYearChange = (year: number) => {
@@ -83,10 +93,21 @@ const HistoryPage: React.FC = () => {
   const handleAddExpense = async (data: ExpenseFormData) => {
     try {
       await createExpense(data);
-      setIsModalOpen(false);
+      setIsExpenseModalOpen(false);
       fetchExpenses();
     } catch (error) {
       console.error("Error creating expense:", error);
+      throw error;
+    }
+  };
+
+  const handleAddCategory = async (data: CategoryFormData) => {
+    try {
+      await createCategory(data);
+      setIsCategoryModalOpen(false);
+      fetchCategories();
+    } catch (error) {
+      console.error("Error creating category:", error);
       throw error;
     }
   };
@@ -205,7 +226,17 @@ const HistoryPage: React.FC = () => {
       >
         <ExpenseForm
           onSubmit={handleAddExpense}
-          onCancel={() => setIsModalOpen(false)}
+          onCancel={() => setIsExpenseModalOpen(false)}
+        />
+      </Modal>
+      <Modal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        title="Add New Category"
+      >
+        <CategoryForm
+          onSubmit={handleAddCategory}
+          onCancel={() => setIsCategoryModalOpen(false)}
         />
       </Modal>
     </div>
