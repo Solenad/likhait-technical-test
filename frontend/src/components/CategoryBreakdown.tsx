@@ -187,7 +187,6 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
             <path d="M8 11l-5-5h10z" />
           </svg>
         </button>
-        <Button>wow</Button>
       </div>
 
       {!isCollapsed && (
