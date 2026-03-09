@@ -40,6 +40,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
     borderBottom: `1px solid ${COLORS.secondary.s04}`,
     background: COLORS.secondary.s01,
     cursor: "pointer",
+    transition: "background-color 0.2s ease",
   };
 
   const totalLabelStyle: React.CSSProperties = {
@@ -144,6 +145,12 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
             e.preventDefault();
             setIsCollapsed(!isCollapsed);
           }
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = COLORS.secondary.s02;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = COLORS.secondary.s01;
         }}
       >
         <span style={totalLabelStyle}>TOTAL:</span>
