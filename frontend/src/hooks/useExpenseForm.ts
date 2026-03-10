@@ -12,11 +12,12 @@ interface UseExpenseFormProps {
 }
 
 export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
+  const currentDate = new Date().toLocaleDateString("en-CA");
   const [formData, setFormData] = useState<ExpenseFormData>({
     amount: initialData?.amount || "",
     description: initialData?.description || "",
     category: initialData?.category || "",
-    date: initialData?.date || formatDate(new Date()),
+    date: initialData?.date || currentDate,
   });
 
   const [errors, setErrors] = useState<Partial<ExpenseFormData>>({});
@@ -47,6 +48,10 @@ export function useExpenseForm({ initialData, onSubmit }: UseExpenseFormProps) {
 
     if (!formData.date) {
       newErrors.date = "Date is required";
+    }
+
+    if (formData.date > currentDate) {
+      newErrors.date = "Expenses cannot be logged for future dates.";
     }
 
     setErrors(newErrors);

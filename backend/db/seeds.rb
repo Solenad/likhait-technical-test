@@ -1,7 +1,7 @@
 # Clear existing data
 puts "Clearing existing data..."
-Expense.destroy_all
-Category.destroy_all
+Expense.delete_all
+Category.delete_all
 
 # Create categories
 puts "Creating categories..."
@@ -113,11 +113,14 @@ expense_templates = {
 
 # Start date: January 1, 2024
 # End date: February 18, 2026
+# IF DEV: Start date = January 1, 2026
 start_date = Date.new(2024, 1, 1)
 end_date = Date.new(2026, 2, 18)
 
 expense_count = 0
 current_date = start_date
+
+expenses_data = []
 
 while current_date <= end_date
   # Generate 3-8 expenses per day (random for variety)
@@ -140,15 +143,16 @@ while current_date <= end_date
       # Add some decimal variation
       amount += rand(0..99) / 100.0
 
-      # Create the expense with created_at set to the date
-      Expense.create!(
+      # Insert the hash into the declared array
+      # This process is faster than doing an insert query for every instance
+      expenses_data << {
         description: template[:description],
         amount: amount,
-        category: category,
+        category_id: category.id,
         date: current_date,
         created_at: current_date,
         updated_at: current_date
-      )
+      }
 
       expense_count += 1
 
@@ -162,6 +166,8 @@ while current_date <= end_date
   # Move to next day
   current_date += 1.day
 end
+
+Expense.insert_all(expenses_data)
 
 puts "Seed data created successfully!"
 puts "Total categories: #{Category.count}"

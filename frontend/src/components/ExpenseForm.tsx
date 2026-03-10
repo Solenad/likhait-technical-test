@@ -21,6 +21,7 @@ export function ExpenseForm({
   onCancel,
   submitLabel = "Add Expense",
 }: ExpenseFormProps) {
+  const currentDate = new Date().toLocaleDateString("en-CA");
   const { formData, errors, isSubmitting, handleChange, handleSubmit } =
     useExpenseForm({
       initialData,
@@ -83,6 +84,7 @@ export function ExpenseForm({
         label="Date"
         type="date"
         value={formData.date}
+        max={currentDate}
         onChange={(e) => handleChange("date", e.target.value)}
         error={errors.date}
         fullWidth

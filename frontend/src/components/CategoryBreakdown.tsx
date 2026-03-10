@@ -1,8 +1,16 @@
 import React from "react";
+import {
+  updateCategory as updateCategoryApi,
+  deleteCategory as deleteCategoryApi,
+} from "../services/api";
 import { CATEGORY_EMOJIS } from "../constants/categoryEmojis";
 import { COLORS } from "../constants/colors";
+import { Button, Modal } from "../vibes";
+import { CategoryFormData } from "../types";
+import { CategoryForm } from "./CategoryForm";
 
 interface CategoryData {
+  id: number;
   category: string;
   amount: number;
   count: number;
@@ -12,14 +20,58 @@ interface CategoryBreakdownProps {
   categories: CategoryData[];
   total: number;
   totalCount: number;
+  onCategoryUpdated: () => void;
 }
 
 const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
   categories,
   total,
   totalCount,
+  onCategoryUpdated,
 }) => {
   const [isCollapsed, setIsCollapsed] = React.useState(true);
+  const [editingCategory, setEditingCategory] =
+    React.useState<CategoryData | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+  const [deletingCategory, setDeletingCategory] =
+    React.useState<CategoryData | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+
+  const handleEdit = (category: CategoryData) => {
+    setEditingCategory(category);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (category: CategoryData) => {
+    setDeletingCategory(category);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingCategory) return;
+    try {
+      await deleteCategoryApi(deletingCategory.id);
+      setIsDeleteModalOpen(false);
+      setDeletingCategory(null);
+      onCategoryUpdated();
+    } catch (error) {
+      console.error("Failed to delete category:", error);
+      alert("Failed to delete category");
+    }
+  };
+
+  const updateCategory = async (data: CategoryFormData) => {
+    if (!editingCategory) return;
+    try {
+      await updateCategoryApi(editingCategory.id, data);
+      setIsEditModalOpen(false);
+      setEditingCategory(null);
+      onCategoryUpdated();
+    } catch (error) {
+      console.error("Failed to update category:", error);
+      throw error;
+    }
+  };
 
   const formatAmount = (amount: number) => {
     return `$${amount.toFixed(2)}`;
@@ -32,6 +84,13 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
     overflow: "hidden",
   };
 
+  const actionButtonsStyle: React.CSSProperties = {
+    display: "flex",
+    width: "90%",
+    justifyContent: "space-between",
+    alignItems: "center",
+  };
+
   const totalStyle: React.CSSProperties = {
     padding: "16px 24px",
     display: "flex",
@@ -40,6 +99,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
     borderBottom: `1px solid ${COLORS.secondary.s04}`,
     background: COLORS.secondary.s01,
     cursor: "pointer",
+    transition: "background-color 0.2s ease",
   };
 
   const totalLabelStyle: React.CSSProperties = {
@@ -62,7 +122,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
   };
 
   const toggleButtonStyle: React.CSSProperties = {
-    width: "32px",
+    width: "102px",
     height: "32px",
     background: COLORS.secondary.s03,
     border: "none",
@@ -145,6 +205,12 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
             setIsCollapsed(!isCollapsed);
           }
         }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = COLORS.secondary.s02;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = COLORS.secondary.s01;
+        }}
       >
         <span style={totalLabelStyle}>TOTAL:</span>
         <span style={totalAmountStyle}>{formatAmount(total)}</span>
@@ -165,6 +231,7 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
             e.currentTarget.style.color = COLORS.secondary.s08;
           }}
         >
+          Categories
           <svg
             width="16"
             height="16"
@@ -198,23 +265,117 @@ const CategoryBreakdown: React.FC<CategoryBreakdownProps> = ({
                 e.currentTarget.style.boxShadow = "none";
               }}
             >
-              <div style={itemInfoStyle}>
-                <span style={itemIconStyle}>
-                  {CATEGORY_EMOJIS[category.category] || "📊"}
-                </span>
-                <div style={itemDetailsStyle}>
-                  <div style={itemNameStyle}>{category.category}</div>
-                  <div style={itemCountStyle}>
-                    {category.count} transaction
-                    {category.count !== 1 ? "s" : ""}
+              <div style={actionButtonsStyle}>
+                <div style={itemInfoStyle}>
+                  <span style={itemIconStyle}>
+                    {CATEGORY_EMOJIS[category.category] || "📊"}
+                  </span>
+                  <div style={itemDetailsStyle}>
+                    <div style={itemNameStyle}>{category.category}</div>
+                    <div style={itemCountStyle}>
+                      {category.count} transaction
+                      {category.count !== 1 ? "s" : ""}
+                    </div>
                   </div>
                 </div>
+                {category.id !== 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                    }}
+                  >
+                    <Button
+                      variant="secondary"
+                      size="small"
+                      onClick={() => handleEdit(category)}
+                    >
+                      Edit
+                    </Button>
+
+                    <Button
+                      variant="danger"
+                      size="small"
+                      onClick={() => handleDelete(category)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                )}
               </div>
+
               <div style={itemAmountStyle}>{formatAmount(category.amount)}</div>
             </div>
           ))}
         </div>
       )}
+      <Modal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setEditingCategory(null);
+        }}
+        title="Edit Category"
+      >
+        {editingCategory && (
+          <CategoryForm
+            initialData={{ name: editingCategory.category }}
+            onSubmit={updateCategory}
+            onCancel={() => {
+              setIsEditModalOpen(false);
+              setEditingCategory(null);
+            }}
+            onDelete={handleDelete}
+          />
+        )}
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeletingCategory(null);
+        }}
+        title="Delete Category"
+      >
+        <div style={{ padding: "16px 0", color: COLORS.secondary.s08 }}>
+          <p>
+            Are you sure you want to delete the category{" "}
+            <strong>"{deletingCategory?.category}"</strong>?
+          </p>
+          <p
+            style={{
+              marginTop: "8px",
+              fontSize: "14px",
+              color: COLORS.secondary.s07,
+            }}
+          >
+            Warning: This action cannot be undone.
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "12px",
+              justifyContent: "flex-end",
+              marginTop: "24px",
+            }}
+          >
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsDeleteModalOpen(false);
+                setDeletingCategory(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={confirmDelete}>
+              Confirm Delete
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
