@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+// SUGGESTION: alis api calls to avoid function conflicts
 import {
   getExpenses,
   createExpense,
@@ -113,13 +114,15 @@ const HistoryPage: React.FC = () => {
   };
 
   // Init categoryList with created data on top of constants
-  // Currently does nothing due to database reseeding,
   const initCategoryData = categoryList.reduce(
     (acc, cat) => {
-      acc[cat.name] = { category: cat.name, amount: 0, count: 0 };
+      acc[cat.name] = { id: cat.id, category: cat.name, amount: 0, count: 0 };
       return acc;
     },
-    {} as Record<string, { category: string; amount: number; count: number }>,
+    {} as Record<
+      string,
+      { id: number; category: string; amount: number; count: number }
+    >,
   );
 
   // Calculate category breakdown
@@ -217,6 +220,7 @@ const HistoryPage: React.FC = () => {
               categories={categories}
               total={total}
               totalCount={totalCount}
+              onCategoryUpdated={fetchCategories}
             />
             <div style={{ marginTop: "32px" }}>
               <CalendarExpenseTable
