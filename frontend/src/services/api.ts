@@ -114,7 +114,7 @@ export async function deleteExpense(id: number): Promise<void> {
 /**
  * Create a category
  *
- * @param (CategoryFormData) - data of a category instance
+ * @param data:(CategoryFormData) - data of a category instance
  * @return (json) - succesfully created data
  */
 export async function createCategory(
@@ -148,7 +148,53 @@ export async function createCategory(
 export async function getCategories(): Promise<Category[]> {
   const response = await fetch(`${API_BASE_URL}/categories`);
   if (!response.ok) {
-    throw new Error("Failed to fetch expenses");
+    throw new Error("Failed to fetch category");
   }
   return response.json();
+}
+
+/**
+ * Update an existing category
+ *
+ * @param id:(number) - the ID of the category to update
+ * @param data:(CategoryFormData) - the updated category data
+ * @return (json) - successfully updated category
+ */
+export async function updateCategory(
+  id: number | string,
+  data: CategoryFormData,
+): Promise<Category> {
+  const categoryData = {
+    name: data.name,
+  };
+
+  const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    method: "PUT", // PATCH
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ category: categoryData }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update category");
+  }
+
+  return response.json();
+}
+
+/**
+ * Delete a category
+ *
+ * @param id:(number) - the ID of the category to delete
+ * @return none
+ */
+export async function deleteCategory(id: number | string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete category");
+  }
 }
