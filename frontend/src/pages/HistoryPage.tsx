@@ -74,7 +74,7 @@ const HistoryPage: React.FC = () => {
   const fetchCategories = async () => {
     try {
       const data = await getCategories();
-      setCategories(data);
+      setCategoryList(data);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -112,19 +112,28 @@ const HistoryPage: React.FC = () => {
     }
   };
 
-  // Calculate category breakdown
-  const categoryData = expenses.reduce(
-    (acc, expense) => {
-      const category = expense.category || "Uncategorized";
-      if (!acc[category]) {
-        acc[category] = { category, amount: 0, count: 0 };
-      }
-      acc[category].amount += Number(expense.amount);
-      acc[category].count += 1;
+  // Init categoryList with created data on top of constants
+  // Currently does nothing due to database reseeding,
+  const initCategoryData = categoryList.reduce(
+    (acc, cat) => {
+      acc[cat.name] = { category: cat.name, amount: 0, count: 0 };
       return acc;
     },
     {} as Record<string, { category: string; amount: number; count: number }>,
   );
+
+  // Calculate category breakdown
+  const categoryData = expenses.reduce((acc, expense) => {
+    const category = expense.category || "Uncategorized";
+
+    if (!acc[category]) {
+      acc[category] = { category, amount: 0, count: 0 };
+    }
+
+    acc[category].amount += Number(expense.amount);
+    acc[category].count += 1;
+    return acc;
+  }, initCategoryData);
 
   const categories = Object.values(categoryData).sort(
     (a, b) => b.amount - a.amount,
