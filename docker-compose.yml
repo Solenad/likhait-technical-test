@@ -10,7 +10,8 @@ services:
       MYSQL_USER: expense_user
       MYSQL_PASSWORD: expense_password
     ports:
-      - "3306:3306"
+      # revert to 3306 after local build
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -26,7 +27,7 @@ services:
           "root",
           "-prootpassword",
         ]
-      interval: 10s
+      interval: 2s
       timeout: 5s
       retries: 5
     networks:
@@ -52,12 +53,12 @@ services:
     volumes:
       - ./backend:/rails
       - backend_gems:/usr/local/bundle
+      # isolating rails for faster compose
+      - backend_tmp:/rails/tmp
     command: >
       sh -c "
-        bundle install &&
-        rails db:migrate &&
-        rails db:seed &&
-        rails server -b 0.0.0.0
+        bundle check || bundle install &&
+        bundle exec rails server -b 0.0.0.0
       "
     networks:
       - expense_network
@@ -84,6 +85,7 @@ volumes:
   mysql_data:
   backend_gems:
   frontend_node_modules:
+  backend_tmp:
 
 networks:
   expense_network:
